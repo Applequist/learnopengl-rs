@@ -8,12 +8,12 @@ use learnopengl_rs::shaders::ShaderProgram;
 use learnopengl_rs::vao;
 use learnopengl_rs::vao::VertexArrayObject;
 
-struct HelloTriangle {
+struct HelloTriangleIndexed {
     vao: VertexArrayObject,
     prgm: ShaderProgram,
 }
 
-impl HelloTriangle {
+impl HelloTriangleIndexed {
     fn new() -> Self {
         Self {
             vao: VertexArrayObject::default(),
@@ -22,15 +22,21 @@ impl HelloTriangle {
     }
 }
 
-impl OpenGLApp for HelloTriangle {
+impl OpenGLApp for HelloTriangleIndexed {
     fn title(&self) -> &str {
-        "Hello Triangle"
+        "Hello Triangle Indexed"
     }
 
     fn initialize(&mut self) {
         // Create vertex array object
-        let vertices: [GLfloat; 9] = [-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.5];
-        self.vao = vao::create(&vertices);
+        let vertices: [GLfloat; 12] = [
+            0.5, 0.5, 0.0,
+            0.5, -0.5, 0.0,
+            -0.5, -0.5, 0.0,
+            -0.5, 0.5, 0.0
+        ];
+        let indices: [GLuint; 6] = [0, 1, 3, 1, 2, 3];
+        self.vao = vao::create_indexed(&vertices, &indices);
 
         // Create GLSL shaders
         let vs_src = include_str!("../res/shaders/hello_triangle.vs");
@@ -46,12 +52,12 @@ impl OpenGLApp for HelloTriangle {
             gl::Clear(gl::COLOR_BUFFER_BIT);
             gl::UseProgram(self.prgm.id);
             gl::BindVertexArray(self.vao.id);
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
         }
     }
 }
 
 fn main() {
-    let app = HelloTriangle::new();
+    let app = HelloTriangleIndexed::new();
     run_in_window(app)
 }
