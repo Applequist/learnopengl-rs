@@ -1,5 +1,4 @@
 use std::cell::Cell;
-use std::ffi::c_void;
 
 use gl::{self, types::*};
 
