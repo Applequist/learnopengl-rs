@@ -1,12 +1,10 @@
-use std::cell::Cell;
-
 use gl::{self, types::*};
 
 use learnopengl_rs::{OpenGLApp, shaders};
 use learnopengl_rs::glutin::run_in_window;
 use learnopengl_rs::shaders::ShaderProgram;
 use learnopengl_rs::vao;
-use learnopengl_rs::vao::VertexArrayObject;
+use learnopengl_rs::vao::{VertexArrayObject, VertexAttribPointer};
 
 struct HelloTriangleIndexed {
     vao: VertexArrayObject,
@@ -22,6 +20,11 @@ impl HelloTriangleIndexed {
     }
 }
 
+#[repr(C)]
+struct Vertex {
+    position: [GLfloat; 3],
+}
+
 impl OpenGLApp for HelloTriangleIndexed {
     fn title(&self) -> &str {
         "Hello Triangle Indexed"
@@ -29,14 +32,14 @@ impl OpenGLApp for HelloTriangleIndexed {
 
     fn initialize(&mut self) {
         // Create vertex array object
-        let vertices: [GLfloat; 12] = [
-            0.5, 0.5, 0.0,
-            0.5, -0.5, 0.0,
-            -0.5, -0.5, 0.0,
-            -0.5, 0.5, 0.0
+        let vertices: [Vertex; 4] = [
+            Vertex { position: [0.5, 0.5, 0.0] },
+            Vertex { position: [0.5, -0.5, 0.0] },
+            Vertex { position: [-0.5, -0.5, 0.0] },
+            Vertex { position: [-0.5, 0.5, 0.0] },
         ];
         let indices: [GLuint; 6] = [0, 1, 3, 1, 2, 3];
-        self.vao = vao::create_indexed(&vertices, &indices);
+        self.vao = vao::create_indexed(&vertices, &[VertexAttribPointer::default()], &indices);
 
         // Create GLSL shaders
         let vs_src = include_str!("../res/shaders/hello_triangle.vs");

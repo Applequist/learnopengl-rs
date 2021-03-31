@@ -1,6 +1,5 @@
 use std;
 use std::ffi::CString;
-use std::rc::Rc;
 
 use gl::{self, types::*};
 

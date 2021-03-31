@@ -1,3 +1,5 @@
+use std::ffi::c_void;
+
 use gl::{self, types::*};
 
 struct VertexBufferObject {
@@ -64,79 +66,69 @@ impl Drop for VertexArrayObject {
 }
 
 pub struct VertexAttribPointer {
-    pub location: GLuint,
-    pub len: GLuint,
+    pub index: GLuint,
+    pub size: GLint,
     pub ty: GLenum,
     pub normalized: GLboolean,
     pub stride: GLsizei,
-    pub ptr: *const (),
+    pub pointer: *const c_void,
 }
 
 impl Default for VertexAttribPointer {
     fn default() -> Self {
         Self {
-            location: 0,
-            len: 0,
+            index: 0,
+            size: 3,
             ty: gl::FLOAT,
             normalized: gl::FALSE as GLboolean,
             stride: 0,
-            ptr: std::ptr::null(),
+            pointer: std::ptr::null(),
         }
     }
 }
 
-pub fn create(data: &[GLfloat]) -> VertexArrayObject {
+pub fn create<T>(data: &[T], attrib: &[VertexAttribPointer]) -> VertexArrayObject {
     unsafe {
-        let mut vao: GLuint = 0;
+        let mut id: GLuint = 0;
 
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
+        gl::GenVertexArrays(1, &mut id);
+        gl::BindVertexArray(id);
 
         // Create a Vertex Buffer Object and copy the vertex data to it
         let vbo = create_vbo(data);
 
-        gl::EnableVertexAttribArray(0);
-        gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE as GLboolean, 0, std::ptr::null());
+        for attr in attrib {
+            gl::EnableVertexAttribArray(attr.index);
+            gl::VertexAttribPointer(attr.index, attr.size, attr.ty, attr.normalized, attr.stride, attr.pointer);
+        }
 
-        VertexArrayObject { id: vao, vbo: VertexBufferObject { id: vbo }, ebo: ElementBufferObject::default() }
+        VertexArrayObject { id, vbo, ebo: ElementBufferObject::default() }
     }
 }
 
-pub fn create_indexed(data: &[GLfloat], indices: &[GLuint]) -> VertexArrayObject {
-    unsafe {
-        let mut vao: GLuint = 0;
-
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-
-        // Create a Vertex Buffer Object and copy the vertex data to it
-        let vbo = create_vbo(data);
-
-        gl::EnableVertexAttribArray(0);
-        gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE as GLboolean, 0, std::ptr::null());
-
-        let ebo = create_ebo(indices);
-
-        VertexArrayObject { id: vao, vbo: VertexBufferObject { id: vbo }, ebo: ElementBufferObject { id: ebo } }
-    }
+pub fn create_indexed<T>(data: &[T], attrib: &[VertexAttribPointer], indices: &[GLuint]) -> VertexArrayObject {
+    let mut vao = create(data, attrib);
+    let ebo = create_ebo(indices);
+    vao.ebo = ebo;
+    vao
 }
 
-fn create_vbo(data: &[GLfloat]) -> GLuint {
+fn create_vbo<T>(data: &[T]) -> VertexBufferObject {
     let mut vbo = 0;
     unsafe {
         gl::GenBuffers(1, &mut vbo);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            (data.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
+            (data.len() * std::mem::size_of::<T>()) as GLsizeiptr,
             std::mem::transmute(&data[0]),
             gl::STATIC_DRAW,
         );
     }
-    vbo
+    VertexBufferObject { id: vbo }
 }
 
-fn create_ebo(indices: &[GLuint]) -> GLuint {
+fn create_ebo(indices: &[GLuint]) -> ElementBufferObject {
     let mut ebo = 0;
     unsafe {
         gl::GenBuffers(1, &mut ebo);
@@ -148,5 +140,5 @@ fn create_ebo(indices: &[GLuint]) -> GLuint {
             gl::STATIC_DRAW,
         );
     }
-    ebo
+    ElementBufferObject { id: ebo }
 }

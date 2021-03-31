@@ -1,20 +1,18 @@
-use std::cell::Cell;
 use std::ffi::c_void;
 
 use gl::{self, types::*};
 
-use learnopengl_rs::{OpenGLApp, shaders};
+use learnopengl_rs::{OpenGLApp, shaders, vao};
 use learnopengl_rs::glutin::run_in_window;
 use learnopengl_rs::shaders::ShaderProgram;
-use learnopengl_rs::vao;
 use learnopengl_rs::vao::{VertexArrayObject, VertexAttribPointer};
 
-struct HelloTriangle {
+struct Shaders {
     vao: VertexArrayObject,
     prgm: ShaderProgram,
 }
 
-impl HelloTriangle {
+impl Shaders {
     fn new() -> Self {
         Self {
             vao: VertexArrayObject::default(),
@@ -28,25 +26,22 @@ struct Vertex {
     position: [GLfloat; 3],
 }
 
-impl OpenGLApp for HelloTriangle {
+impl OpenGLApp for Shaders {
     fn title(&self) -> &str {
-        "Hello Triangle"
+        "Shaders Exercise 3"
     }
 
     fn initialize(&mut self) {
-        // Create vertex array object
-        let vertices: [Vertex; 3] = [
-            Vertex { position: [-0.5, -0.5, 0.0] },
+        let vertices = [
             Vertex { position: [0.5, -0.5, 0.0] },
-            Vertex { position: [0.0, 0.5, 0.5] }
+            Vertex { position: [-0.5, -0.5, 0.0] },
+            Vertex { position: [0.0, 0.5, 0.0] },
         ];
+
         self.vao = vao::create(&vertices, &[VertexAttribPointer::default()]);
 
-        // Create GLSL shaders
-        let vs_src = include_str!("../res/shaders/hello_triangle.vs");
-        let vs = shaders::compile(vs_src, gl::VERTEX_SHADER).unwrap();
-        let fs_src = include_str!("../res/shaders/hello_triangle.fs");
-        let fs = shaders::compile(fs_src, gl::FRAGMENT_SHADER).unwrap();
+        let vs = shaders::compile(include_str!("../res/shaders/shaders_ex3.vs"), gl::VERTEX_SHADER).unwrap();
+        let fs = shaders::compile(include_str!("../res/shaders/shaders_ex3.fs"), gl::FRAGMENT_SHADER).unwrap();
         self.prgm = shaders::link(&vs, &fs).unwrap();
     }
 
@@ -62,6 +57,6 @@ impl OpenGLApp for HelloTriangle {
 }
 
 fn main() {
-    let app = HelloTriangle::new();
-    run_in_window(app)
+    let app = Shaders::new();
+    run_in_window(app);
 }

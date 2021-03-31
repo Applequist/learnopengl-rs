@@ -6,7 +6,7 @@ use gl::{self, types::*};
 use learnopengl_rs::{OpenGLApp, shaders, vao};
 use learnopengl_rs::glutin::run_in_window;
 use learnopengl_rs::shaders::ShaderProgram;
-use learnopengl_rs::vao::VertexArrayObject;
+use learnopengl_rs::vao::{VertexArrayObject, VertexAttribPointer};
 
 struct HelloTriangleEx1 {
     vao: VertexArrayObject,
@@ -22,6 +22,11 @@ impl HelloTriangleEx1 {
     }
 }
 
+#[repr(C)]
+struct Vertex {
+    position: [GLfloat; 3],
+}
+
 impl OpenGLApp for HelloTriangleEx1 {
     fn title(&self) -> &str {
         "Hello Triangle Exercise 1"
@@ -29,16 +34,16 @@ impl OpenGLApp for HelloTriangleEx1 {
 
     fn initialize(&mut self) {
         // Create vao
-        let vertices: [GLfloat; 18] = [
-            -0.6, -0.5, 0.0,
-            0.4, -0.5, 0.0,
-            -0.1, 0.5, 0.0,
-            0.1, 0.5, 0.0,
-            0.6, -0.5, 0.0,
-            1.0, 0.5, 0.0
+        let vertices: [Vertex; 6] = [
+            Vertex { position: [-0.6, -0.5, 0.0] },
+            Vertex { position: [0.4, -0.5, 0.0] },
+            Vertex { position: [-0.1, 0.5, 0.0] },
+            Vertex { position: [0.1, 0.5, 0.0] },
+            Vertex { position: [0.6, -0.5, 0.0] },
+            Vertex { position: [1.0, 0.5, 0.0] },
         ];
 
-        self.vao = vao::create(&vertices);
+        self.vao = vao::create(&vertices, &[VertexAttribPointer::default()]);
 
         // Create GLSL shaders
         let vs_src: &'static str = include_str!("../res/shaders/hello_triangle.vs");
