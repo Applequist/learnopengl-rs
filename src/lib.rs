@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 /// trait for OpenGL demo apps.
 pub trait OpenGLApp {
     /// window title
@@ -29,8 +31,12 @@ pub trait OpenGLApp {
 
     /// Render a immediate mode ui if any.
     fn render_ui(&self) {}
+
+    /// Clean up app resources.
+    fn cleanup(&self) {}
 }
 
 pub mod glutin;
 pub mod vao;
+pub mod textures;
 pub mod shaders;

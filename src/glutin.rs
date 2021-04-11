@@ -32,9 +32,8 @@ pub fn run_in_window<T: 'static + OpenGLApp>(mut app: T) {
     app.initialize();
 
     event_loop.run(move |event, _, control_flow| {
-        *control_flow = ControlFlow::Poll;
+        *control_flow = ControlFlow::Poll; // continuously run the loop even with no events dispatched
         match event {
-            Event::LoopDestroyed => return,
             Event::WindowEvent { window_id, event } if window_id == gl_window.window().id() => match event {
                 WindowEvent::CloseRequested => {
                     // Cleanup
@@ -54,6 +53,7 @@ pub fn run_in_window<T: 'static + OpenGLApp>(mut app: T) {
                 app.render_ui();
                 gl_window.swap_buffers().unwrap();
             }
+            Event::LoopDestroyed => app.cleanup(),
             _ => (),
         }
     });
