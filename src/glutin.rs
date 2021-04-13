@@ -38,7 +38,10 @@ pub fn run_in_window<T: 'static + OpenGLApp>(mut app: T) {
                 WindowEvent::CloseRequested => {
                     // Cleanup
                     *control_flow = ControlFlow::Exit
-                },
+                }
+                WindowEvent::Resized(sz) => {
+                    app.resize(sz.width, sz.height);
+                }
                 WindowEvent::KeyboardInput { input, .. } => {
                     if let Some(VirtualKeyCode::Escape) = input.virtual_keycode {
                         if input.state == ElementState::Pressed {

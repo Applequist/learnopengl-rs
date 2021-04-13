@@ -19,8 +19,10 @@ pub trait OpenGLApp {
 
     /// is the window  resizable
     fn is_resizable(&self) -> bool {
-        true
+        false
     }
+
+    fn resize(&mut self, width: u32, height: u32) {}
 
     /// Initialize resources.
     /// The OpenGL context is made current before this function is called.

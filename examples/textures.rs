@@ -34,7 +34,7 @@ impl OpenGLApp for Textures {
         "Textures"
     }
 
-    fn initialize(&mut self, current_time: Instant) {
+    fn initialize(&mut self) {
         let vertices = [
             Vertex { position: [0.5, 0.5, 0.0], color: [1.0, 0.0, 0.0], tex: [1.0, 1.0] },
             Vertex { position: [0.5, -0.5, 0.0], color: [0.0, 1.0, 0.0], tex: [1.0, 0.0] },
@@ -91,7 +91,7 @@ impl OpenGLApp for Textures {
         self.prgm = shaders::link(&vs, &fs).unwrap();
     }
 
-    fn render(&self, current_time: Instant) {
+    fn render(&self) {
         unsafe {
             gl::ClearColor(0.6, 0.6, 0.6, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
