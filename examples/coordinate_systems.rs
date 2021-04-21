@@ -184,8 +184,15 @@ impl OpenGLApp for CoordinateSystems {
                 1,
                 gl::FALSE as GLboolean,
                 projection.to_homogeneous().as_ptr());
+
+            let elapsed = self.start_time.elapsed().as_secs_f32();
             for (i, pos) in cube_positions.iter().enumerate() {
-                let model = Isometry3::new(*pos, (20.0 * i as f32).to_radians() * Vector3::new(1.0, 0.3, 0.5));
+                let angle = if i % 3 == 0 {
+                    elapsed * FRAC_PI_4
+                } else {
+                    (20.0 * i as f32).to_radians()
+                };
+                let model = Isometry3::new(*pos, angle * Vector3::new(1.0, 0.3, 0.5));
                 gl::UniformMatrix4fv(
                     gl::GetUniformLocation(self.prgm.id, CString::new("model").unwrap().as_ptr()),
                     1,
