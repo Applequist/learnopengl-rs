@@ -4,7 +4,7 @@ use std::ffi::{c_void, CString};
 use std::time::Instant;
 
 use gl::{self, types::*};
-use nalgebra::{Perspective3, Rotation3, Translation3, Vector3};
+use nalgebra::{Isometry3, Perspective3, Rotation3, Translation3, Vector3};
 
 use learnopengl_rs::{OpenGLApp, shaders, textures, vao};
 use learnopengl_rs::glutin::run_in_window;
@@ -144,20 +144,36 @@ impl OpenGLApp for CoordinateSystems {
     }
 
     fn render(&self) {
-        let angle = self.start_time.elapsed().as_secs_f32() * FRAC_PI_4;
-        let model = Rotation3::new(angle * Vector3::new(0.5, 1.0, 0.0)); // rotate -55 deg around x axis
-        let view = Translation3::new(0.0, 0.0, -3.0); // look from (0, 0, 3) to (0, 0, 0), up (0, 1, 0)
-        let projection = Perspective3::new(self.width() / self.height(), 60.0f32.to_radians(), 0.1, 100.0); // perspective
+        let cube_positions = [
+            Vector3::new(0.0, 0.0, 0.0),
+            Vector3::new(2.0, 5.0, -15.0),
+            Vector3::new(-1.5, -2.2, -2.5),
+            Vector3::new(-3.8, -2.0, -12.3),
+            Vector3::new(2.4, -0.4, -3.5),
+            Vector3::new(-1.7, 3.0, -7.5),
+            Vector3::new(1.3, -2.0, -2.5),
+            Vector3::new(1.5, 2.0, -2.5),
+            Vector3::new(1.5, 0.2, -1.5),
+            Vector3::new(-1.3, 1.0, -1.5),
+        ];
         unsafe {
             gl::Enable(gl::DEPTH_TEST);
             gl::ClearColor(0.6, 0.6, 0.6, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+
+            gl::BindVertexArray(self.vao.id);
+
+            gl::ActiveTexture(self.texture1.unit);
+            gl::BindTexture(gl::TEXTURE_2D, self.texture1.id);
+            gl::ActiveTexture(self.texture2.unit);
+            gl::BindTexture(gl::TEXTURE_2D, self.texture2.id);
+
             gl::UseProgram(self.prgm.id);
-            gl::UniformMatrix4fv(
-                gl::GetUniformLocation(self.prgm.id, CString::new("model").unwrap().as_ptr()),
-                1,
-                gl::FALSE as GLboolean,
-                model.to_homogeneous().as_ptr());
+            gl::Uniform1i(gl::GetUniformLocation(self.prgm.id, CString::new("texture1").unwrap().as_ptr()), 0);
+            gl::Uniform1i(gl::GetUniformLocation(self.prgm.id, CString::new("texture2").unwrap().as_ptr()), 1);
+
+            let view = Translation3::new(0.0, 0.0, -3.0); // look from (0, 0, 3) to (0, 0, 0), up (0, 1, 0)
+            let projection = Perspective3::new(self.width() / self.height(), 60.0f32.to_radians(), 0.1, 100.0); // perspective
             gl::UniformMatrix4fv(
                 gl::GetUniformLocation(self.prgm.id, CString::new("view").unwrap().as_ptr()),
                 1,
@@ -168,14 +184,15 @@ impl OpenGLApp for CoordinateSystems {
                 1,
                 gl::FALSE as GLboolean,
                 projection.to_homogeneous().as_ptr());
-            gl::Uniform1i(gl::GetUniformLocation(self.prgm.id, CString::new("texture1").unwrap().as_ptr()), 0);
-            gl::Uniform1i(gl::GetUniformLocation(self.prgm.id, CString::new("texture2").unwrap().as_ptr()), 1);
-            gl::BindVertexArray(self.vao.id);
-            gl::ActiveTexture(self.texture1.unit);
-            gl::BindTexture(gl::TEXTURE_2D, self.texture1.id);
-            gl::ActiveTexture(self.texture2.unit);
-            gl::BindTexture(gl::TEXTURE_2D, self.texture2.id);
-            gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, 0 as *const c_void);
+            for (i, pos) in cube_positions.iter().enumerate() {
+                let model = Isometry3::new(*pos, (20.0 * i as f32).to_radians() * Vector3::new(1.0, 0.3, 0.5));
+                gl::UniformMatrix4fv(
+                    gl::GetUniformLocation(self.prgm.id, CString::new("model").unwrap().as_ptr()),
+                    1,
+                    gl::FALSE as GLboolean,
+                    model.to_homogeneous().as_ptr());
+                gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, 0 as *const c_void);
+            }
         }
     }
 }
